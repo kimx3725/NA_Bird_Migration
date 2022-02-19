@@ -1,0 +1,79 @@
+---
+title: "1.bird_tech"
+author: "Dennis Kim"
+date: "2/18/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preamble
+
+call libraries 
+```{r call libraries, message=FALSE}
+library(readr)
+library(here)
+library(ezknitr)
+library(dplyr)
+library(forcats)
+library(RColorBrewer)
+library(ggcorrplot)
+library(wesanderson)
+library(ggridges)
+```
+
+# Read the tech data 
+
+import the tech data
+```{r import tech data}
+# call data 
+tech <- read.csv("tech.csv")
+
+# look at the data structure 
+summary(tech)
+
+# check the unique types of tags used in the literatures
+tech %>% select(type) %>% distinct()
+```
+
+# Data modification for visualization 
+
+```{r data modification}
+# factorized the data 
+tech$species <- factor(tech$species, levels = c("sandhill_crane","woodcock","golden_winged_warbler"))
+tech$type <- factor(tech$type, levels = c("GLS","GPS","VHF","VM","band"))
+```
+
+# Visualization 
+
+```{r visualization}
+ggplot(tech, aes(x = year, y = species, color = type, point_color = type, fill = type))+
+  geom_density_ridges(
+    jittered_points = TRUE, scale = .85, rel_min_height = .01,
+    point_shape = "|", point_size = 4, size = 0.5, color = "white",
+    position = position_points_jitter(height = 0),
+    bandwidth = 4,
+    alpha = 0.45)+
+  scale_y_discrete(expand = c(0, 0), name = "Species", labels = c("Sandhill crane", "American woodcock", "Golden-winged warbler")) +
+  scale_x_continuous(expand = c(0, 0), name = "Year Published") +
+  scale_fill_manual(values = c("#E69F00", "#CC79A7", "#56B4E9","#D55E00"), name = "Type", labels = c("GLS","GPS","VHF","Band")) +
+  scale_color_manual(values = c("#E69F00", "#CC79A7", "#56B4E9","#D55E00"), guide = "none") +
+  scale_discrete_manual("point_color", values = c("#E69F00", "#CC79A7", "#56B4E9","#D55E00"), guide = "none") +
+  coord_cartesian(clip = "off") +
+  guides(fill = guide_legend(
+    override.aes = list(
+      fill = c("#E69F00", "#CC79A7", "#56B4E9","#D55E00"),
+      color = NA, point_color = NA)
+    )
+  ) +
+  ggtitle("Timeline of tag usages in North American migratory bird studies", subtitle = "Tag types used from 39 studies of selected species")+
+  theme_classic()
+```
+save the used landcover plot 
+```{r save the crop plot}
+#ggsave("tags.png", width = 15, height = 10, dpi = 700, bg = NA)
+```
+
